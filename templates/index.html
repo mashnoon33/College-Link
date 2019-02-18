@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="theme-color" content="#23B946">
+
+    <script> //Captures variable from flask web server
+    var api_port = {{ api_port }};
+    var link2Dict = "{{ url_for('static', filename='data_dict.json') }}"
+  </script>
+    <title>College Link</title>
+    <link rel="stylesheet" type="text/css" href="https://rawgit.com/gdaunton/Semantic-UI/range-slider-build/dist/semantic.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <div class="pushable">
+        <div class="ui bottom attached segment">
+            <div class="ui visible left inline vertical segment sidebar wide menu">
+                <a class="item">
+                    <h2>College Link</h2>
+                </a>
+
+                <p class="SidebarText">Highest degree </p>
+                <div class="yourDiv">
+                    <div class="ui  buttons">
+
+                        <button class="ui  button" id="ass">Associates</button>
+                        <div class="or"></div>
+                        <button class="ui positive  button" id="bac">Bachelors</button>
+                        <div class="or"></div>
+                        <button class="ui  button" id="grad">Graduate</button>
+
+                    </div>
+                </div>
+
+                <p class="SidebarText">Owndership</p>
+                <div class="yourDiv">
+                    <div class="ui buttons">
+                        <button class="ui button" id="pub">Public</button>
+                        <div class="or"></div>
+                        <button class="ui  button" id="priv">Private</button>
+                        <div class="or"></div>
+                        <button class="ui positive button" id="all">All</button>
+
+                    </div>
+                </div>
+
+                <div class="yourDiv">
+                    <div class="ui search selection dropdown second">
+                        <input type="hidden" name="gender">
+                        <div class="default text">Region</div>
+
+                    </div>
+                </div>
+
+                <p class="SidebarText">SAT Composite: <span id="sat_score"></span></p>
+
+                <div class="yourDiv">
+                    <div class="ui double range" id="sat"></div>
+                </div>
+
+                <p class="SidebarText">ACT Composite: <span id="act_score"></span></p>
+                <div class="yourDiv">
+                    <div class="ui double range" id="act"></div>
+                </div>
+
+                <p class="SidebarText">Net Cost: <span id="cost_n"></span></p>
+                <div class="yourDiv">
+                    <div class="ui double range" id="cost"></div>
+
+                </div>
+
+                <p class="SidebarText">Mid Career Salary: <span id="salary_n"></span></p>
+                <div class="yourDiv">
+                    <div class="ui double range" id="salary"></div>
+
+                </div>
+
+
+                <p class="SidebarText">Acceptance Rate: <span id="selective_n"></span></p>
+
+                <div class="yourDiv">
+                    <div class="ui double range" id="selective"></div>
+                </div>
+
+                <div class="yourDiv">
+                    <div class="ui search">
+                        <div class="ui icon input">
+                            <input class="prompt" type="text" id="prompt" placeholder="or Search by Only Name...">
+                            <i class="search icon"></i>
+                        </div>
+                        <div class="results"></div>
+                    </div>
+                </div>
+
+                <div class="yourDiv">
+                    <button class="positive ui button" id="search">Search</button>
+                </div>
+
+            </div>
+            <div class="ui main fluid container pusher" id="booody">
+                <div style="width:100%;height:93vh;overflow-x: scroll;">
+
+                  <div id="welcome">
+                    <p style="font-size:70px;margin-bottom: -8px;font-weight: bold; color:red" >Find the Right College for You</p>
+
+                    <p style="font-size:40px;margin-bottom: -8px;font-weight: bold; color:#424242" >
+
+                      Pick what you want in a college
+on the left to search
+
+or search using a name if you know what you're looking for
+
+                    </p>
+
+                    <img src="https://scene360.com/wp-content/uploads/2015/02/oleg-01.jpg" style="position:fixed"                      />
+
+                  </div>
+
+
+                    <table class="ui selectable table" id="mytable">
+                        <thead>
+                            <tr>
+                                <th class="ascending"> </th>
+                                <th class="ascending">Name</th>
+                                <th class="ascending">Location</th>
+                                <th class="ascending">Acceptance</th>
+                                <th class="ascending">SAT</th>
+                                <th class="ascending">ACT</th>
+                                <th class="ascending">Tuition</th>
+                                <th class="ascending">Income</th>
+                                <th class="ascending"> </th>
+                            </tr>
+                        </thead>
+                        <tbody id="results">
+                        </tbody>
+                </div>
+                </table>
+            </div>
+
+<!--  Modal Stuff. Hidden By default-->
+
+            <div class="ui modal">
+                <i class="close icon"></i>
+                <div class="scrolling content" id="content">
+                    <div class="ui celled grid">
+                        <div class="row">
+                            <div class="three wide column" id="logo">
+                            </div>
+                            <div class="thirteen wide column">
+                                <p style="font-size:50px;margin-bottom: -8px;font-weight: bold; color:#424242" id="name">temp</p>
+                                <p style="font-size:20px;margin-left: 0px;margin-bottom: -4px; color: #686868" id="location">Northfield, MN</p>
+                                <p style="font-size:20px;margin-left: 0px; color: #686868" id="adm_rate"> Acceptance Rate : 24%</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class=" wide column">
+                                <p style="font-size:30px;margin-bottom: -8px;font-weight: bold; color:#424242">SAT</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class=" wide column" id="sat_info">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class=" wide column">
+                                <p style="font-size:30px;margin-bottom: -8px;font-weight: bold; color:#424242">ACT</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class=" wide column" id="act_info">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class=" wide column">
+                                <p style="font-size:30px;margin-bottom: -8px;font-weight: bold; color:#424242">Diversity</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class=" wide column" id="divr_info">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class=" wide column">
+                                <p style="font-size:30px;margin-bottom: -8px;font-weight: bold; color:#424242">Majors</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class=" wide column" id="major_info">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+
+
+    <script src="{{ url_for('static', filename='jquery-3.2.1.js') }}"></script>
+    <script src="https://rawgit.com/gdaunton/Semantic-UI/range-slider-build/dist/semantic.js"></script>
+    <script src="https://semantic-ui.com/javascript/library/tablesort.js"></script>
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+
+</body>

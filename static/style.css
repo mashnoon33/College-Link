@@ -1,0 +1,69 @@
+.dropdown {
+  text-align: center;
+}
+
+
+h1 {
+    text-align: center;
+    color: #1d4537;
+}
+
+#booody{
+  background-color: #F4F0E7;
+}
+
+#welcome {
+  margin: 100px;
+}
+
+#searrchhh{
+  background-color: #e0e1e2;
+  font-weight: bold;
+}
+
+.ui.dropdown:not(.button) > .default.text, .ui.default.dropdown:not(.button) > .text {
+  color: #00000099;
+}
+
+#sideBarrr{
+  /* background-color: #EBEBEB; */
+
+}
+
+#name {
+  align-items: top;
+}
+
+.SidebarText {
+  margin-left: 10px;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #00000099;
+}
+
+.yourDiv{
+    display: flex;
+    justify-content: center;
+    align-items: left;
+    flex-wrap: wrap;
+    margin: 5px;
+}
+
+
+.dropdown {
+  width: 100%;
+}
+
+.pushable > .ui.fixed.menu {
+  padding-left: 260px;
+}
+
+.header {
+  font-size:  30px;
+}
+
+.pushable > .ui.main.container {
+  padding-right: 380px;
+  padding-left: 35px;
+  padding-top: 23px;
+}

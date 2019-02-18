@@ -1,0 +1,178 @@
+{
+	"_type": "export",
+	"__export_format": 3,
+	"__export_date": "2018-10-23T00:50:58.420Z",
+	"__export_source": "insomnia.desktop.app:v6.0.2",
+	"resources": [
+		{
+			"_id": "wrk_9ca7297f20bb4027ba1154bfabbbe099",
+			"created": 1539965931931,
+			"description": "",
+			"modified": 1539965931931,
+			"name": "Insomnia",
+			"parentId": null,
+			"_type": "workspace"
+		},
+		{
+			"_id": "env_45c57b3c1df44cf7bf50c9d8d1c06ca2",
+			"color": null,
+			"created": 1539965931968,
+			"data": {},
+			"isPrivate": false,
+			"metaSortKey": 1539965931968,
+			"modified": 1540183133443,
+			"name": "New Environment",
+			"parentId": "wrk_9ca7297f20bb4027ba1154bfabbbe099",
+			"_type": "environment"
+		},
+		{
+			"_id": "jar_0c7d281877454e59b625322f64acb609",
+			"cookies": [],
+			"created": 1539965931971,
+			"modified": 1539965931971,
+			"name": "Default Jar",
+			"parentId": "wrk_9ca7297f20bb4027ba1154bfabbbe099",
+			"_type": "cookie_jar"
+		},
+		{
+			"_id": "req_a4a17c43cb0b4573963c2e000aba3c29",
+			"authentication": {},
+			"body": {},
+			"created": 1539965996008,
+			"description": "",
+			"headers": [],
+			"isPrivate": false,
+			"metaSortKey": -1539965996009,
+			"method": "GET",
+			"modified": 1540229900940,
+			"name": "http://localhost:8080/schools/",
+			"parameters": [
+				{
+					"id": "pair_a3a504f645334516b33706a7c72575a1",
+					"name": "adm_rate",
+					"value": "[.10,.30]"
+				},
+				{
+					"id": "pair_31ceaf8f4d284d00af2261003f3261d2",
+					"name": "sat_avg",
+					"value": "[1200,1500]"
+				},
+				{
+					"id": "pair_e1f6d1d9a97c4292a873a0ef7e530d88",
+					"name": "md_earn_wne_p10",
+					"value": "[0,200000]"
+				},
+				{
+					"id": "pair_fac39c8680fd403ca0159894afac2b85",
+					"name": "region_id",
+					"value": "4"
+				},
+				{
+					"id": "pair_9868ced7405a40fba0658108a8c6f186",
+					"name": "actcmmid",
+					"value": "[30,36]"
+				},
+				{
+					"id": "pair_f8c0b9a9f49c43eab175138848b5c9bf",
+					"name": "costt4_a",
+					"value": "[0,70000]"
+				}
+			],
+			"parentId": "wrk_9ca7297f20bb4027ba1154bfabbbe099",
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"settingMaxTimelineDataSize": 1000,
+			"settingRebuildPath": true,
+			"settingSendCookies": true,
+			"settingStoreCookies": true,
+			"url": "http://localhost:8080/schools/?",
+			"_type": "request"
+		},
+		{
+			"_id": "req_c24b66d07b0841fc9c6f718ce3e64eea",
+			"authentication": {},
+			"body": {},
+			"created": 1540170097326,
+			"description": "",
+			"headers": [],
+			"isPrivate": false,
+			"metaSortKey": -1540170097326,
+			"method": "GET",
+			"modified": 1540227471087,
+			"name": "getSchool",
+			"parameters": [
+				{
+					"id": "pair_816db67f1de543049a79719937c970c8",
+					"name": "opeid",
+					"value": "186800"
+				}
+			],
+			"parentId": "wrk_9ca7297f20bb4027ba1154bfabbbe099",
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"settingMaxTimelineDataSize": 1000,
+			"settingRebuildPath": true,
+			"settingSendCookies": true,
+			"settingStoreCookies": true,
+			"url": "http://localhost:8080/school/",
+			"_type": "request"
+		},
+		{
+			"_id": "req_b837164573644b148ffc3d8c1e5252f2",
+			"authentication": {},
+			"body": {},
+			"created": 1540171418469,
+			"description": "",
+			"headers": [],
+			"isPrivate": false,
+			"metaSortKey": -1540171418469,
+			"method": "GET",
+			"modified": 1540227510563,
+			"name": "getSchoolsByName",
+			"parameters": [
+				{
+					"id": "pair_5d4589bfd54e42f4b176e3211b95a057",
+					"name": "name",
+					"value": "carl"
+				},
+				{
+					"id": "pair_4eb44c0a17d5480a9a5ce2fb2c3c3167",
+					"name": "",
+					"value": ""
+				}
+			],
+			"parentId": "wrk_9ca7297f20bb4027ba1154bfabbbe099",
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"settingMaxTimelineDataSize": 1000,
+			"settingRebuildPath": true,
+			"settingSendCookies": true,
+			"settingStoreCookies": true,
+			"url": "http://localhost:8080/schools/name",
+			"_type": "request"
+		},
+		{
+			"_id": "req_3b3a435be6284ca89ead94c1bef77e58",
+			"authentication": {},
+			"body": {},
+			"created": 1540179194791,
+			"description": "",
+			"headers": [],
+			"isPrivate": false,
+			"metaSortKey": -1540179194791,
+			"method": "GET",
+			"modified": 1540227472886,
+			"name": "states",
+			"parameters": [],
+			"parentId": "wrk_9ca7297f20bb4027ba1154bfabbbe099",
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"settingMaxTimelineDataSize": 1000,
+			"settingRebuildPath": true,
+			"settingSendCookies": true,
+			"settingStoreCookies": true,
+			"url": "http://localhost:8080/states",
+			"_type": "request"
+		}
+	]
+}

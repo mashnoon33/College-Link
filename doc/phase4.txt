@@ -1,0 +1,719 @@
+PHASE 4 Documentation for Mash's webapp
+
+## DATABASE STRUCTURE
+
+One huge database of schools with a lot of columns
+** Should I do a smaller one for search?
+
+// There is a data dictionary and example data for Carleton at the end of this doc
+-- Sequence
+CREATE SEQUENCE IF NOT EXISTS "public"."schools_opeid_seq";
+
+-- Table Definition
+CREATE TABLE "public"."schools" (
+    "opeid" int4 NOT NULL DEFAULT nextval('schools_opeid_seq'::regclass),
+    "name" text,
+    "city" text,
+    "state" text,
+    "zip" text,
+    "insturl" text,
+    "region_id" int4,
+    "locale" float8,
+    "latitude" float8,
+    "longitude" float8,
+    "adm_rate" float8,
+    "satvr25" float8,
+    "satvr75" float8,
+    "satmt25" float8,
+    "satmt75" float8,
+    "satwr25" float8,
+    "satwr75" float8,
+    "satvrmid" float8,
+    "satmtmid" float8,
+    "satwrmid" float8,
+    "actcm25" float8,
+    "actcm75" float8,
+    "acten25" float8,
+    "acten75" float8,
+    "actmt25" float8,
+    "actmt75" float8,
+    "actwr25" float8,
+    "actwr75" float8,
+    "actcmmid" float8,
+    "actenmid" float8,
+    "actmtmid" float8,
+    "actwrmid" float8,
+    "sat_avg" float8,
+    "sat_avg_all" float8,
+    "pcip01" float8,
+    "pcip03" float8,
+    "pcip04" float8,
+    "pcip05" float8,
+    "pcip09" float8,
+    "pcip10" float8,
+    "pcip11" float8,
+    "pcip12" float8,
+    "pcip13" float8,
+    "pcip14" float8,
+    "pcip15" float8,
+    "pcip16" float8,
+    "pcip19" float8,
+    "pcip22" float8,
+    "pcip23" float8,
+    "pcip24" float8,
+    "pcip25" float8,
+    "pcip26" float8,
+    "pcip27" float8,
+    "pcip29" float8,
+    "pcip30" float8,
+    "pcip31" float8,
+    "pcip38" float8,
+    "pcip39" float8,
+    "pcip40" float8,
+    "pcip41" float8,
+    "pcip42" float8,
+    "pcip43" float8,
+    "pcip44" float8,
+    "pcip45" float8,
+    "pcip46" float8,
+    "pcip47" float8,
+    "pcip48" float8,
+    "pcip49" float8,
+    "pcip50" float8,
+    "pcip51" float8,
+    "pcip52" float8,
+    "pcip54" float8,
+    "ugds" float8,
+    "ug" float8,
+    "ugds_white" float8,
+    "ugds_black" float8,
+    "ugds_hisp" float8,
+    "ugds_asian" float8,
+    "ugds_aian" float8,
+    "ugds_nhpi" float8,
+    "ugds_2mor" float8,
+    "ugds_nra" float8,
+    "ugds_unkn" float8,
+    "ugds_whitenh" float8,
+    "ugds_blacknh" float8,
+    "ugds_api" float8,
+    "ugds_aianold" float8,
+    "ugds_hispold" float8,
+    "ug_nra" float8,
+    "ug_unkn" float8,
+    "ug_whitenh" float8,
+    "ug_blacknh" float8,
+    "ug_api" float8,
+    "ug_aianold" float8,
+    "ug_hispold" float8,
+    "npt4_priv" float8,
+    "npt41_pub" float8,
+    "npt42_pub" float8,
+    "npt43_pub" float8,
+    "npt44_pub" float8,
+    "npt45_pub" float8,
+    "npt41_priv" float8,
+    "npt42_priv" float8,
+    "npt43_priv" float8,
+    "npt44_priv" float8,
+    "npt45_priv" float8,
+    "num4_priv" float8,
+    "costt4_a" float8,
+    "tuitionfee_in" float8,
+    "tuitionfee_out" float8,
+    "female_enrl_orig_yr2_rt" float8,
+    "male_enrl_orig_yr2_rt" float8,
+    "grad_debt_mdn" float8,
+    "firstgen_debt_mdn" float8,
+    "notfirstgen_debt_mdn" float8,
+    "first_gen" float8,
+    "md_earn_wne_p10" float8
+);
+
+CREATE TABLE "public"."states" (
+    "name" text,
+    "abbr" text
+);
+
+CREATE TABLE region_id (
+      id SERIAL,
+      name TEXT,
+      states TEXT[]
+);
+
+CREATE TABLE major (
+      id SERIAL,
+      name TEXT
+);
+
+
+
+CREATE TYPE mood AS ENUM () // figure out how to do enum
+
+
+**** POTENTIAL EFFICIENCY IMPROVEMENT ****
+
+Pre - building lists of schools by state / regions to speed up search ?
+
+
+
+## API STRUCTURE
+
+1. SYNOPSIS: Filter the list of schools using the query parameters. At any moment, multiple
+parameters are going to be used.
+
+QUERY (GET): /schools/?param1=<value>&param2=<value>&...page=<number>
+
+RESPONSE: a list of 20 schools with the following details :
+          * name
+          * location
+          * acceptance rate
+          * SAT
+          * ACT
+          * Yearly Tuition
+          * Diversity
+          * Mid Career Income
+          * SERIAL/ 8 digit unique id (OPEID)
+
+GET Parameters :
+Parameters  |   Required   |          Valid Options          |   DEFAULT    |     DESCRIPTION
+------------------------------------------------------------------------------
+type                y            public, private, all (TXT)       all
+degree              y                 2, 4, all (TXT)            all           2 year or 4 year colleges
+majors              n               see MAJOR_LIST (TXT)         all
+region_id           n              see REGION_ID_LIST (INT)      all
+SAT_AVG             n                   200 - 1600 (INT ARR)    [800-1600]      AVG SAT score
+ACTCMMID            n                    0-36 (INT ARR)         [15-34]          ACT midpoint
+COSTT4_A            n                 0 - 100,000 (INT ARR)   [0 - 100,000]     Avg Cost of attendace
+MD_EARN_WNE_P9      n                 0 - 300,000 (INT ARR)   [0 - 300,000]      Median earning after 9 yrs
+ADM_RATE            n                  0 - 1  (INT ARR)         [0 - 1]         Admission rate in decimals
+page                y                 1 - 1000 (INT)                1           Number of page to display
+
+EXAMPLE: https://example.com/schools/?adm_rate=%5B.10,.30%5D&sat_avg=%5B1200,1500%5D&md_earn_wne_p10=%5B0,200000%5D&region_id=4&actcmmid=%5B30,36%5D&costt4_a=%5B0,70000%5D
+[
+	{
+		"name": "Grinnell College",
+		"city": "Grinnell",
+		"state": "IA",
+		"opeid": 186800,
+		"adm_rate": 0.2019,
+		"sat_avg": 1410.0,
+		"ugds_white": 0.5208,
+		"costt4_a": 61098.0,
+		"md_earn_wne_p10": 49100.0
+	},
+	{
+		"name": "Carleton College",
+		"city": "Northfield",
+		"state": "MN",
+		"opeid": 234000,
+		"adm_rate": 0.2262,
+		"sat_avg": 1413.0,
+		"ugds_white": 0.6161,
+		"costt4_a": 64420.0,
+		"md_earn_wne_p10": 54200.0
+	},
+	{
+		"name": "Washington University in St Louis",
+		"city": "Saint Louis",
+		"state": "MO",
+		"opeid": 252000,
+		"adm_rate": 0.1653,
+		"sat_avg": 1472.0,
+		"ugds_white": 0.5337,
+		"costt4_a": 67751.0,
+		"md_earn_wne_p10": 70100.0
+	}
+]
+
+2. SYNOPSIS: Returns detailed profile of a singular college provided the 8 digit OPID
+QUERY (GET): school/?opeid=<opeid>
+
+RESPONSE: a single college and its whole profile with all 119 columns. See data
+ dictionary at the end for unclear variable name
+
+EXAMPLE: https://example.com/school/?opeid=186800
+{
+	"opeid": 186800,
+	"name": "Grinnell College",
+	"city": "Grinnell",
+	"state": "IA",
+	"zip": "50112-1690",
+	"insturl": "www.grinnell.edu",
+	"region_id": 4,
+	"locale": 33.0,
+	"latitude": 41.747952,
+	"longitude": -92.722094,
+	"adm_rate": 0.2019,
+	"satvr25": 640.0,
+	"satvr75": 750.0,
+	"satmt25": 680.0,
+	"satmt75": 780.0,
+	"satwr25": null,
+	"satwr75": null,
+	"satvrmid": 695.0,
+	"satmtmid": 730.0,
+	"satwrmid": null,
+	"actcm25": 30.0,
+	"actcm75": 33.0,
+	"acten25": 30.0,
+	"acten75": 35.0,
+	"actmt25": 28.0,
+	"actmt75": 33.0,
+	"actwr25": null,
+	"actwr75": null,
+	"actcmmid": 32.0,
+	"actenmid": 33.0,
+	"actmtmid": 31.0,
+	"actwrmid": null,
+	"sat_avg": 1410.0,
+	"sat_avg_all": 1410.0,
+	"pcip01": 0.0,
+	"pcip03": 0.0,
+	"pcip04": 0.0,
+	"pcip05": 0.0293,
+	"pcip09": 0.0,
+	"pcip10": 0.0,
+	"pcip11": 0.0773,
+	"pcip12": 0.0,
+	"pcip13": 0.0,
+	"pcip14": 0.0,
+	"pcip15": 0.0,
+	"pcip16": 0.088,
+	"pcip19": 0.0,
+	"pcip22": 0.0,
+	"pcip23": 0.0853,
+	"pcip24": 0.0,
+	"pcip25": 0.0,
+	"pcip26": 0.168,
+	"pcip27": 0.0427,
+	"pcip29": 0.0,
+	"pcip30": 0.008,
+	"pcip31": 0.0,
+	"pcip38": 0.0347,
+	"pcip39": 0.0,
+	"pcip40": 0.072,
+	"pcip41": 0.0,
+	"pcip42": 0.0533,
+	"pcip43": 0.0,
+	"pcip44": 0.0,
+	"pcip45": 0.2373,
+	"pcip46": 0.0,
+	"pcip47": 0.0,
+	"pcip48": 0.0,
+	"pcip49": 0.0,
+	"pcip50": 0.0507,
+	"pcip51": 0.0,
+	"pcip52": 0.0,
+	"pcip54": 0.0533,
+	"ugds": 1657.0,
+	"ug": 1344.0,
+	"ugds_white": 0.5208,
+	"ugds_black": 0.0591,
+	"ugds_hisp": 0.0754,
+	"ugds_asian": 0.0785,
+	"ugds_aian": 0.0006,
+	"ugds_nhpi": 0.0,
+	"ugds_2mor": 0.0465,
+	"ugds_nra": 0.1835,
+	"ugds_unkn": 0.0356,
+	"ugds_whitenh": 0.5933,
+	"ugds_blacknh": 0.0589,
+	"ugds_api": 0.0779,
+	"ugds_aianold": 0.011,
+	"ugds_hispold": 0.0693,
+	"ug_nra": 0.0789,
+	"ug_unkn": 0.1049,
+	"ug_whitenh": 0.6927,
+	"ug_blacknh": 0.0327,
+	"ug_api": 0.0439,
+	"ug_aianold": 0.0037,
+	"ug_hispold": 0.0432,
+	"npt4_priv": 24136.0,
+	"npt41_pub": null,
+	"npt42_pub": null,
+	"npt43_pub": null,
+	"npt44_pub": null,
+	"npt45_pub": null,
+	"npt41_priv": 13774.0,
+	"npt42_priv": 10160.0,
+	"npt43_priv": 17563.0,
+	"npt44_priv": 24776.0,
+	"npt45_priv": 35726.0,
+	"num4_priv": 234.0,
+	"costt4_a": 61098.0,
+	"tuitionfee_in": 48758.0,
+	"tuitionfee_out": 48758.0,
+	"female_enrl_orig_yr2_rt": 0.723076923,
+	"male_enrl_orig_yr2_rt": 0.644067797,
+	"grad_debt_mdn": 13170.0,
+	"firstgen_debt_mdn": 12250.0,
+	"notfirstgen_debt_mdn": 12000.0,
+	"first_gen": 0.144124169,
+	"md_earn_wne_p10": 49100.0
+}
+
+3. SYNOPSIS: Filter the list of schools using the name parameter. Ignores other parameter
+
+QUERY (GET): /name/<search_text>
+
+RESPONSE: a list of 20 schools with the following details :
+          * name
+          * location
+          * acceptance rate
+          * SAT
+          * ACT
+          * Yearly Tuition
+          * Diversity
+          * Mid Career Income
+          * SERIAL/ 8 digit unique id (OPEID)
+
+EXAMPLE: https://example.com/schools/name/carleton or https://example.com/schools/name=carleton or https://example.com/schools/carleton (?)
+
+[
+	{
+		"name": "Gemological Institute of America-Carlsbad",
+		"city": "Carlsbad",
+		"state": "CA",
+		"opeid": 2231900,
+		"adm_rate": null,
+		"sat_avg": null,
+		"ugds_white": 0.3775,
+		"costt4_a": null,
+		"md_earn_wne_p10": 46500.0
+	},
+	{
+		"name": "Carlos Albizu University-Miami",
+		"city": "Miami",
+		"state": "FL",
+		"opeid": 1072401,
+		"adm_rate": 0.3953,
+		"sat_avg": null,
+		"ugds_white": 0.019,
+		"costt4_a": 28348.0,
+		"md_earn_wne_p10": 30200.0
+	},
+	{
+		"name": "Carl Sandburg College",
+		"city": "Galesburg",
+		"state": "IL",
+		"opeid": 726500,
+		"adm_rate": null,
+		"sat_avg": null,
+		"ugds_white": 0.7573,
+		"costt4_a": 10168.0,
+		"md_earn_wne_p10": 29700.0
+	},
+	{
+		"name": "Carleton College",
+		"city": "Northfield",
+		"state": "MN",
+		"opeid": 234000,
+		"adm_rate": 0.2262,
+		"sat_avg": 1413.0,
+		"ugds_white": 0.6161,
+		"costt4_a": 64420.0,
+		"md_earn_wne_p10": 54200.0
+	},
+	{
+		"name": "New Mexico State University-Carlsbad",
+		"city": "Carlsbad",
+		"state": "NM",
+		"opeid": 265703,
+		"adm_rate": null,
+		"sat_avg": null,
+		"ugds_white": 0.3592,
+		"costt4_a": 10697.0,
+		"md_earn_wne_p10": 34600.0
+	},
+	{
+		"name": "Carl Albert State College",
+		"city": "Poteau",
+		"state": "OK",
+		"opeid": 317600,
+		"adm_rate": null,
+		"sat_avg": null,
+		"ugds_white": 0.5733,
+		"costt4_a": 11077.0,
+		"md_earn_wne_p10": 26700.0
+	},
+	{
+		"name": "Carlow University",
+		"city": "Pittsburgh",
+		"state": "PA",
+		"opeid": 330300,
+		"adm_rate": 0.8635,
+		"sat_avg": 982.0,
+		"ugds_white": 0.6396,
+		"costt4_a": 38552.0,
+		"md_earn_wne_p10": 39700.0
+	},
+	{
+		"name": "Carlos Albizu University-San Juan",
+		"city": "San Juan",
+		"state": "PR",
+		"opeid": 1072400,
+		"adm_rate": 0.6349,
+		"sat_avg": null,
+		"ugds_white": 0.0073,
+		"costt4_a": 14822.0,
+		"md_earn_wne_p10": 30200.0
+	},
+	{
+		"name": "Carlson College of Massage Therapy",
+		"city": "Anamosa",
+		"state": "IA",
+		"opeid": 3720300,
+		"adm_rate": null,
+		"sat_avg": null,
+		"ugds_white": 0.8431,
+		"costt4_a": null,
+		"md_earn_wne_p10": null
+	}
+]
+
+## Utility endpoints [good for populating dropdowns]
+4. /regions [returns a list of all the regions]
+
+eg : [{"Region" :  "Plains", "states" : ["CT", "ME", "MA", "NH", "RI", "VT"]}, ...]
+
+5. /states [returns a list of all the states]
+
+eg:
+[
+	"Alabama",
+	"Alaska",
+	"Arizona",
+	"Arkansas",
+	"California",
+	"Colorado",
+	"Connecticut",
+	"Delaware",
+	"District of Columbia",
+	"Florida",
+	"Georgia",
+	"Hawaii",
+	"Idaho",
+	"Illinois",
+	"Indiana",
+	"Iowa",
+	"Kansas",
+	"Kentucky",
+	"Louisiana",
+	"Maine",
+	"Montana",
+	"Nebraska",
+	"Nevada",
+	"New Hampshire",
+	"New Jersey",
+	"New Mexico",
+	"New York",
+	"North Carolina",
+	"North Dakota",
+	"Ohio",
+	"Oklahoma",
+	"Oregon",
+	"Maryland",
+	"Massachusetts",
+	"Michigan",
+	"Minnesota",
+	"Mississippi",
+	"Missouri",
+	"Pennsylvania",
+	"Rhode Island",
+	"South Carolina",
+	"South Dakota",
+	"Tennessee",
+	"Texas",
+	"Utah",
+	"Vermont",
+	"Virginia",
+	"Washington",
+	"West Virginia",
+	"Wisconsin",
+	"Wyoming"
+]
+
+6. /majors [returns a list of all the possible majors]
+
+eg : ["Computer Science", "Cinema and Media Studies"]
+
+----------------------------------------
+
+## REGION_ID_LIST :
+1	New England (CT, ME, MA, NH, RI, VT)
+2	Mid East (DE, DC, MD, NJ, NY, PA)
+3	Great Lakes (IL, IN, MI, OH, WI)
+4	Plains (IA, KS, MN, MO, NE, ND, SD)
+5	Southeast (AL, AR, FL, GA, KY, LA, MS, NC, SC, TN, VA, WV)
+6	Southwest (AZ, NM, OK, TX)
+7	Rocky Mountains (CO, ID, MT, UT, WY)
+8	Far West (AK, CA, HI, NV, OR, WA)
+9	Outlying Areas (AS, FM, GU, MH, MP, PR, PW, VI)
+
+
+## MAJOR_LIST : [ Would probably need to parse the list to make it more suitable for the DB ]
+Agriculture, Agriculture Operations.
+Natural Resources And Conservation.
+Architecture .
+Area, Ethnic, Cultural, Gender, And Group Studies.
+Communication, Journalism, .
+Communications Technologies/Technicians And Support Services.
+Computer And Information Sciences And Support Services.
+Personal And Culinary Services.
+Education.
+Engineering.
+Engineering Technologies And Engineering-Related Fields.
+Foreign Languages, Literatures, And Linguistics.
+Family And Consumer Sciences/Human Sciences.
+Legal Professions And Studies.
+English Language And Literature/Letters.
+Liberal Arts And Sciences, General Studies And Humanities.
+Library Science.
+Biological And Biomedical Sciences.
+Mathematics And Statistics.
+Military Technologies And Applied Sciences.
+Multi/Interdisciplinary Studies.
+Parks, Recreation, Leisure, And Fitness Studies.
+Philosophy And Religious Studies.
+Theology And Religious Vocations.
+Physical Sciences.
+Science Technologies/Technicians.
+Psychology.
+Homeland Security, Law Enforcement, Firefighting
+Public Administration And Social Service Professions.
+Social Sciences.
+Construction Trades.
+Mechanic And Repair Technologies/Technicians.
+Precision Production.
+Transportation And Materials Moving.
+Visual And Performing Arts.
+Health Professions .
+Business, Management, Marketing
+History.
+
+
+
+
+
+## DATA DICTIONARY
+
+INSTNM,Carleton College,Institution name
+CITY,Northfield,City
+STABBR,MN,State postcode
+ZIP,55057-4001,ZIP code
+INSTURL,www.carleton.edu,URL for institution's homepage
+NPCURL,https://apps.carleton.edu/admissions/afford/estimator/,URL for institution's net price calculator
+OPEID,234000,8-digit OPE ID for institution
+OPEID6,2340,6-digit OPE ID for institution
+REGION,4,Region (IPEDS)
+LOCALE,32,Locale of institution
+LATITUDE,44.462318,Latitude
+LONGITUDE,-93.154666,Longitude
+ADM_RATE,0.2262,Admission rate
+SATVR25,660,25th percentile of SAT scores at the institution (critical reading)
+SATVR75,770,75th percentile of SAT scores at the institution (critical reading)
+SATMT25,660,25th percentile of SAT scores at the institution (math)
+SATMT75,770,75th percentile of SAT scores at the institution (math)
+SATWR25,660,25th percentile of SAT scores at the institution (writing)
+SATWR75,750,75th percentile of SAT scores at the institution (writing)
+SATVRMID,715,Midpoint of SAT scores at the institution (critical reading)
+SATMTMID,715,Midpoint of SAT scores at the institution (math)
+SATWRMID,705,Midpoint of SAT scores at the institution (writing)
+ACTCM25,30,25th percentile of the ACT cumulative score
+ACTCM75,33,75th percentile of the ACT cumulative score
+ACTEN25,null,25th percentile of the ACT English score
+ACTEN75,null,75th percentile of the ACT English score
+ACTMT25,null,25th percentile of the ACT math score
+ACTMT75,null,75th percentile of the ACT math score
+ACTWR25,null,25th percentile of the ACT writing score
+ACTWR75,null,75th percentile of the ACT writing score
+ACTCMMID,32,Midpoint of the ACT cumulative score
+ACTENMID,null,Midpoint of the ACT English score
+ACTMTMID,null,Midpoint of the ACT math score
+ACTWRMID,null,Midpoint of the ACT writing score
+SAT_AVG,1413,Average SAT equivalent score of students admitted
+SAT_AVG_ALL,1413,Average SAT equivalent score of students admitted for all campuses rolled up to the 6-digit OPE ID
+PCIP01,0,"Agriculture, Agriculture Operations,."
+PCIP03,0.0201,Natural Resources And Conservation.
+PCIP04,0,Architecture .
+PCIP05,0.0241,"Area, Ethnic, Cultural, Gender, And Group Studies."
+PCIP09,0,"Communication, Journalism, ."
+PCIP10,0,Communications Technologies/Technicians And Support Services.
+PCIP11,0.1006,Computer And Information Sciences And Support Services.
+PCIP12,0,Personal And Culinary Services.
+PCIP13,0,Education.
+PCIP14,0,Engineering.
+PCIP15,0,Engineering Technologies And Engineering-Related Fields.
+PCIP16,0.0302,"Foreign Languages, Literatures, And Linguistics."
+PCIP19,0,Family And Consumer Sciences/Human Sciences.
+PCIP22,0,Legal Professions And Studies.
+PCIP23,0.0644,English Language And Literature/Letters.
+PCIP24,0,"Liberal Arts And Sciences, General Studies And Humanities."
+PCIP25,0,Library Science.
+PCIP26,0.1127,Biological And Biomedical Sciences.
+PCIP27,0.0644,Mathematics And Statistics.
+PCIP29,0,Military Technologies And Applied Sciences.
+PCIP30,0.006,Multi/Interdisciplinary Studies.
+PCIP31,0,"Parks, Recreation, Leisure, And Fitness Studies."
+PCIP38,0.0282,Philosophy And Religious Studies.
+PCIP39,0,Theology And Religious Vocations.
+PCIP40,0.1268,Physical Sciences.
+PCIP41,0,Science Technologies/Technicians.
+PCIP42,0.0604,Psychology.
+PCIP43,0,"Homeland Security, Law Enforcement, Firefighting And Related Protective Services."
+PCIP44,0,Public Administration And Social Service Professions.
+PCIP45,0.1992,Social Sciences.
+PCIP46,0,Construction Trades.
+PCIP47,0,Mechanic And Repair Technologies/Technicians.
+PCIP48,0,Precision Production.
+PCIP49,0,Transportation And Materials Moving.
+PCIP50,0.0986,Visual And Performing Arts.
+PCIP51,0,Health Professions .
+PCIP52,0,"Business, Management, Marketing, And Related Support Services."
+PCIP54,0.0644,History.
+UGDS,2045,Enrollment of undergraduate certificate/degree-seeking students
+UG,1936,Enrollment of all undergraduate students
+UGDS_WHITE,0.6161,Total share of enrollment of undergraduate degree-seeking students who are white
+UGDS_BLACK,0.045,Total share of enrollment of undergraduate degree-seeking students who are black
+UGDS_HISP,0.0748,Total share of enrollment of undergraduate degree-seeking students who are Hispanic
+UGDS_ASIAN,0.0856,Total share of enrollment of undergraduate degree-seeking students who are Asian
+UGDS_AIAN,0.0015,Total share of enrollment of undergraduate degree-seeking students who are American Indian/Alaska Native
+UGDS_NHPI,0.001,Total share of enrollment of undergraduate degree-seeking students who are Native Hawaiian/Pacific Islander
+UGDS_2MOR,0.0567,Total share of enrollment of undergraduate degree-seeking students who are two or more races
+UGDS_NRA,0.1017,Total share of enrollment of undergraduate degree-seeking students who are non-resident aliens
+UGDS_UNKN,0.0176,Total share of enrollment of undergraduate degree-seeking students whose race is unknown
+UGDS_WHITENH,0.6913,Total share of enrollment of undergraduate degree-seeking students who are white non-Hispanic
+UGDS_BLACKNH,0.0463,Total share of enrollment of undergraduate degree-seeking students who are black non-Hispanic
+UGDS_API,0.0967,Total share of enrollment of undergraduate degree-seeking students who are Asian/Pacific Islander
+UGDS_AIANOLD,0.0065,Total share of enrollment of undergraduate degree-seeking students who are American Indian/Alaska Native
+UGDS_HISPOLD,0.0554,Total share of enrollment of undergraduate degree-seeking students who are Hispanic
+UG_NRA,0.0181,Total share of enrollment of undergraduate students who are non-resident aliens
+UG_UNKN,0,Total share of enrollment of undergraduate students whose race is unknown
+UG_WHITENH,0.8316,Total share of enrollment of undergraduate students who are white non-Hispanic
+UG_BLACKNH,0.0294,Total share of enrollment of undergraduate students who are black non-Hispanic
+UG_API,0.0821,Total share of enrollment of undergraduate students who are Asian/Pacific Islander
+UG_AIANOLD,0.0026,Total share of enrollment of undergraduate students who are American Indian/Alaska Native
+UG_HISPOLD,0.0362,Total share of enrollment of undergraduate students who are Hispanic
+NPT4_PRIV,26745,Average net price for Title IV institutions (private for-profit and nonprofit institutions)
+NPT41_PUB,null,"Average net price for $0-$30,000 family income (public institutions)"
+NPT42_PUB,null,"Average net price for $30,001-$48,000 family income (public institutions)"
+NPT43_PUB,null,"Average net price for $48,001-$75,000 family income (public institutions)"
+NPT44_PUB,null,"Average net price for $75,001-$110,000 family income (public institutions)"
+NPT45_PUB,null,"Average net price for $110,000+ family income (public institutions)"
+NPT41_PRIV,12207,"Average net price for $0-$30,000 family income (private for-profit and nonprofit institutions)"
+NPT42_PRIV,13473,"Average net price for $30,001-$48,000 family income (private for-profit and nonprofit institutions)"
+NPT43_PRIV,14682,"Average net price for $48,001-$75,000 family income (private for-profit and nonprofit institutions)"
+NPT44_PRIV,22396,"Average net price for $75,001-$110,000 family income (private for-profit and nonprofit institutions)"
+NPT45_PRIV,38398,"Average net price for $110,000+ family income (private for-profit and nonprofit institutions)"
+NUM4_PRIV,228,Number of Title IV students (private for-profit and nonprofit institutions)
+COSTT4_A,64420,Average cost of attendance (academic year institutions)
+TUITIONFEE_IN,50874,In-state tuition and fees
+TUITIONFEE_OUT,50874,Out-of-state tuition and fees
+FEMALE_ENRL_ORIG_YR2_RT,0.803571429,Percent of female students who were still enrolled at original institution within 2 years
+MALE_ENRL_ORIG_YR2_RT,0.819047619,Percent of male students who were still enrolled at original institution within 2 years
+GRAD_DEBT_MDN,19500,The median debt for students who have completed
+FIRSTGEN_DEBT_MDN,18409,The median debt for first-generation students
+NOTFIRSTGEN_DEBT_MDN,18798,The median debt for not-first-generation students
+FIRST_GEN,0.162393162,Share of first-generation students
+COUNT_WNE_INDEP0_INC1_P10,21,"Number of dependent students working and not enrolled 10 years after entry in the lowest income tercile $0-$30,000 "
